@@ -7,7 +7,7 @@ const FormData = require('form-data')
 const fs = require('fs')
 require('dotenv').config({ path: './.env' })
 const Metadata = require('../models/metadata')
-const cryptoRandomString = require('crypto-random-string')
+import cryptoRandomString from 'crypto-random-string';
 
 const _createNFTType = id => id.padStart(64, '0')
 
