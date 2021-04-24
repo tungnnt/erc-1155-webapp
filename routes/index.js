@@ -92,7 +92,7 @@ const _uploadImage = async file => {
 }
 
 router.get('/', function (req, res, next) {
-  res.render('index', { title: 'CREATE YOUR OWN NFT' })
+  res.render('index', { title: 'CREATE YOUR OWN NFT', address: process.env.CONTRACT_OWNER })
 })
 
 router.get('/metadata/:nftType', async (req, res, next) => {
@@ -148,13 +148,20 @@ router.post('/submitForm', upload.single('image'), async (req, res, next) => {
 
     const saved = await newMetadata.save()
 
-    delete saved._id
-
-    delete saved.__v
+    const { createdOn, description, id, image, name } = saved
 
     await _mintNFT(NFTType)
 
-    res.status(200).json(saved)
+    res.status(200).json({
+      createdOn,
+      description,
+      id,
+      image,
+      name,
+      nftURL: `https://testnets.opensea.io/assets/${
+        process.env.CONTRACT_ADDRESS
+      }/${NFTType.replace(/^0+/, '')}`
+    })
   } catch (error) {
     res.status(400).send(error.message || JSON.stringify(error))
   }

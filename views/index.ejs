@@ -8,6 +8,9 @@
 
   <body>
     <h1><%= title %></h1>
+
+    <h2>Address: </Address><%= address %></h2>
+
     <form
       id="create-form"
       action="/submitForm"
@@ -45,6 +48,10 @@
 
       <div id="status"></div>
     </form>
+
+    <a id="nft-url" href="" target="_blank" style="visibility:hidden;"
+      >View minted NFT</a
+    >
   </body>
 
   <script>
@@ -65,6 +72,10 @@
         data: formData,
         success: function (data) {
           $('#status').text('Success !')
+
+          $('#nft-url')
+            .attr('href', data.nftURL)
+            .attr('style', 'visibility:visible;')
         },
         error: error => {
           $('#status').text('Fail !')
