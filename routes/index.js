@@ -8,18 +8,48 @@ const fs = require('fs')
 require('dotenv').config({ path: './.env' })
 const Metadata = require('../models/metadata')
 
+const HDWalletProvider = require('@truffle/hdwallet-provider')
+const provider = new HDWalletProvider({
+  mnemonic: process.env.MNEMONIC,
+  providerOrUrl: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMYAPIKEY}`
+})
 const Web3 = require('web3')
-const web3 = new Web3(
-  `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMYAPIKEY}`
-)
+const web3 = new Web3(provider)
 const contractABI = require('../constant/TokenABI.json')
 const contractAddress = process.env.CONTRACT_ADDRESS
+const ethers = require('ethers')
+const wallet = ethers.Wallet.fromMnemonic(process.env.MNEMONIC)
+const privateKey = wallet.privateKey
 
-// setImmediate(async () => {
-//   const Token = await new web3.eth.Contract(contractABI, contractAddress)
+const _mintNFT = async nftType => {
+  const Token = await new web3.eth.Contract(contractABI, contractAddress)
 
-//   console.log(await Token.methods.mint('0x55a0C0243db23E7AdA0A599Fd8635f301D917436', 21022424432151219962016168673823).call())
-// })
+  const data = await Token.methods
+    .mint(process.env.CONTRACT_OWNER, nftType)
+    .encodeABI()
+
+  const signedTx = await web3.eth.accounts.signTransaction(
+    {
+      from: process.env.CONTRACT_OWNER,
+      to: process.env.CONTRACT_ADDRESS,
+      data: data,
+      gas: 200000
+    },
+    privateKey
+  )
+
+  await web3.eth
+    .sendSignedTransaction(signedTx.rawTransaction)
+    .on('transactionHash', function (hash) {
+      console.debug('Transaction Create NFT Hash:', hash)
+    })
+    .on('receipt', async receipt => {
+      console.debug('Transaction Create NFT Receipt:', receipt)
+    })
+    .on('error', function (error) {
+      throw new Error('MINT_TOKEN.FAILED')
+    })
+}
 
 const _randomInt = (length = 5) => {
   var result = []
@@ -69,11 +99,11 @@ router.get('/metadata/:nftType', async (req, res, next) => {
   try {
     const { nftType } = req.params
 
-    if (typeof nftType !== 'string' || nftType.length !== 64) {
-      throw new Error('NFT_TYPE.INVALID')
-    }
+    const hexString = nftType.replace(/^0+/, '')
 
-    const existingMetadata = await Metadata.findOne({ id: nftType }).lean()
+    const nftTypeId = _createNFTType(parseInt(hexString, 16) + '')
+
+    const existingMetadata = await Metadata.findOne({ id: nftTypeId }).lean()
 
     if (!existingMetadata) {
       throw new Error('NFT_TYPE.NOT_FOUND')
@@ -121,6 +151,8 @@ router.post('/submitForm', upload.single('image'), async (req, res, next) => {
     delete saved._id
 
     delete saved.__v
+
+    await _mintNFT(NFTType)
 
     res.status(200).json(saved)
   } catch (error) {
