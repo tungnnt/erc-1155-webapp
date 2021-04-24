@@ -9,7 +9,6 @@
     "axios": "^0.21.1",
     "body-parser": "^1.18.3",
     "cookie-parser": "~1.4.4",
-    "crypto-random-string": "^4.0.0",
     "debug": "~2.6.9",
     "dotenv": "^8.2.0",
     "ejs": "~2.6.1",

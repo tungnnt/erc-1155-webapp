@@ -7,7 +7,20 @@ const FormData = require('form-data')
 const fs = require('fs')
 require('dotenv').config({ path: './.env' })
 const Metadata = require('../models/metadata')
-import cryptoRandomString from 'crypto-random-string';
+
+const _randomInt = (length = 32) => {
+  var result = []
+
+  var characters = '0123456789'
+
+  var charactersLength = characters.length
+
+  for (var i = 0; i < length; i++) {
+    result.push(characters.charAt(Math.floor(Math.random() * charactersLength)))
+  }
+
+  return result.join('')
+}
 
 const _createNFTType = id => id.padStart(64, '0')
 
@@ -81,9 +94,7 @@ router.post('/submitForm', upload.single('image'), async (req, res, next) => {
 
     const tokenDescription = req.body['token-des']
 
-    const NFTType = _createNFTType(
-      cryptoRandomString({ length: 32, type: 'numeric' })
-    )
+    const NFTType = _createNFTType(_randomInt())
 
     const newMetadata = new Metadata({
       image: imageUrl,
