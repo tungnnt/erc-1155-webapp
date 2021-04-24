@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  </head>
+
+  <body>
+    <h1><%= title %></h1>
+    <form
+      id="create-form"
+      action="/submitForm"
+      method="post"
+      enctype="multipart/form-data"
+    >
+      <label for="token-name">Token name: </label><br />
+
+      <input type="text" id="token-name" name="token-name" /><br /><br />
+
+      <label for="token-des">Token description: </label><br />
+
+      <textarea type="text" id="token-des" name="token-des"></textarea>
+      <br /><br />
+
+      <label for="image">NFT image: </label><br />
+
+      <input
+        type="file"
+        accept="image/*"
+        id="image"
+        name="image"
+        onchange="readURL(this);"
+      />
+      <br /><br />
+      <img
+        style="visibility:hidden;"
+        id="uploaded-image"
+        src="#"
+        alt="uploaded-image"
+      />
+      <br /><br />
+
+      <input id="submit-button" type="submit" value="Submit" />
+
+      <div id="status"></div>
+    </form>
+  </body>
+
+  <script>
+    $(document).ajaxStart(function () {
+      $('#status').text('Loading...')
+
+      $('#submit-button').attr('disabled', true)
+    })
+
+    $('form#create-form').submit(function (e) {
+      e.preventDefault()
+
+      const formData = new FormData(this)
+
+      $.ajax({
+        url: '/submitForm',
+        type: 'POST',
+        data: formData,
+        success: function (data) {
+          $('#status').text('Success !')
+        },
+        error: error => {
+          $('#status').text('Fail !')
+        },
+        cache: false,
+        contentType: false,
+        processData: false
+      })
+    })
+
+    function readURL (input) {
+      console.log(input.files[0].type)
+
+      if (
+        input.files &&
+        input.files[0] &&
+        input.files[0].type.indexOf('image') > -1
+      ) {
+        const reader = new FileReader()
+
+        reader.onload = function (e) {
+          $('#uploaded-image')
+            .attr('src', e.target.result)
+            .attr('style', 'visibility:visible;')
+            .width(150)
+            .height(200)
+        }
+
+        reader.readAsDataURL(input.files[0])
+      } else {
+        $('#uploaded-image')
+          .attr('style', 'visibility:hidden;')
+          .height(0)
+      }
+    }
+  </script>
+</html>
