@@ -8,10 +8,23 @@ const fs = require('fs')
 require('dotenv').config({ path: './.env' })
 const Metadata = require('../models/metadata')
 
-const _randomInt = (length = 32) => {
+const Web3 = require('web3')
+const web3 = new Web3(
+  `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMYAPIKEY}`
+)
+const contractABI = require('../constant/TokenABI.json')
+const contractAddress = process.env.CONTRACT_ADDRESS
+
+// setImmediate(async () => {
+//   const Token = await new web3.eth.Contract(contractABI, contractAddress)
+
+//   console.log(await Token.methods.mint('0x55a0C0243db23E7AdA0A599Fd8635f301D917436', 21022424432151219962016168673823).call())
+// })
+
+const _randomInt = (length = 5) => {
   var result = []
 
-  var characters = '0123456789'
+  var characters = '123456789'
 
   var charactersLength = characters.length
 
